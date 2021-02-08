@@ -9,7 +9,7 @@
 //write function to file...??
 
 //figure out better way to .. store board
-
+//https://stackoverflow.com/questions/2614249/dynamic-memory-for-2d-char-array
 void loadLife(FILE *fptr, int row, int col, int gen){
     /* Load the game of life with the number of columns, then
      * output the game into the struct called board
