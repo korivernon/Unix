@@ -2,12 +2,47 @@
 #include <string.h>
 #include <stdlib.h>
 
+
 void loadLife(FILE *fptr, int row, int col, int gen){
     /* Load the game of life with the number of columns, then
      * output the game into the struct called board
      */
-    printf("row: %d, col: %d, gen: %d\n", row, col, gen);
-
+    //printf("row: %d, col: %d, gen: %d\n", row, col, gen);
+    char grid[row][col];
+    char ch = getc(fptr);
+    
+    char line[col]; //max linelength
+    int currRow = 0;
+    while (fgets(line, sizeof(line), fptr)) {
+        
+        //printf("%s", line);
+        for(int i = 0; i < col; i++){
+            if (line[i] == ' '){
+                grid[currRow][i] = '-';
+                printf("%c",'-');
+            }
+            else if (line[i] == '*'){
+                grid[currRow][i] = '*';
+                printf("%c",'*');
+            }
+            else{
+                grid[currRow][i] = '-';
+                printf("%c", '-');
+            }
+        }
+        printf("%c",'\n');
+        currRow++;
+    }
+    
+    // continue filling rows
+    while (currRow < row){
+        for(int i = 0; i < col; i++){
+            grid[currRow][i] = '-';
+            printf("%c", '-');
+        }
+        printf("%c", '\n');
+        currRow++;
+    }
     fclose(fptr);
 }
 
