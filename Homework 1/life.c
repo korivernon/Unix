@@ -15,6 +15,7 @@ void loadLife(FILE *fptr, int row, int col, int gen){
      * output the game into the struct called board
      */
     //printf("row: %d, col: %d, gen: %d\n", row, col, gen);
+
     char grid[row+1][col+1];
     char ch = getc(fptr);
     
