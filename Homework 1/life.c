@@ -1,8 +1,15 @@
+///-----------------------------------------------------------------
+///   Class:          <UNIX SYSTEM PROGRAMMING>
+///   Description:    <Game of Life>
+///   Author:         <Kori Vernon>                    Date: <02/08/21>
+///   Revision History:
+///-----------------------------------------------------------------
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-// Constant
+// Constant -> not needed upon further analysis
 char OUT[] = "output.txt";
 
 /*
@@ -272,12 +279,12 @@ void decisionFork(int argc, char *argv[])
         exit(1);
     }
 }
-int main(int argc, char *argv[])
-{
-    /*
+/*
      * Here we will split and determine what happens.
      * rows, columns, filename, and generations will be defaulted
      * to original values.
      */
+int main(int argc, char *argv[])
+{
     decisionFork(argc, argv);
 }
