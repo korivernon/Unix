@@ -1,10 +1,9 @@
-///-----------------------------------------------------------------
-///   Class:          <UNIX SYSTEM PROGRAMMING>
-///   Description:    <Game of Life>
-///   Author:         <Kori Vernon>                    Date: <02/08/21>
-///   Revision History:
-///-----------------------------------------------------------------
-
+///------------------------------------------------///
+///   Class:          <UNIX SYSTEM PROGRAMMING>    ///
+///   Description:    <Game of Life>               ///
+///   Author:         <Kori Vernon>                ///
+///   Date: <02/09/21>                             ///
+///------------------------------------------------///
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
