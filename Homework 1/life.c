@@ -67,7 +67,7 @@ void decisionFork(int argc, char *argv[]){
     }
     else {
         for (int i = 0; i < argc; i++){
-            printf("%d input: %s", i, argv[i]);
+            printf("%d input: %s\n", i, argv[i]);
         }
 
         printf("life: error in input given in command line\n");
@@ -80,5 +80,6 @@ int main(int argc, char *argv[]){
      * rows, columns, filename, and generations will be defaulted
      * to original values.
      */
+    printf("num of arguments is: %d\n", argc);
     decisionFork(argc, argv);
 }
