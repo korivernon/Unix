@@ -8,10 +8,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
-// Constant -> not needed upon further analysis
-char OUT[] = "output.txt";
-
 /*
  * The initBoard function will take in a char** and an amoount
  * of column and create a two dimensional character array. 
@@ -42,7 +38,6 @@ void printBoard(char **board, int row, int col, int currGen)
         printf("\n");
     }
 }
-
 /* This function prints the board to the file, which upon further
  * analysis... doesn't actually need to be created
  */
@@ -58,7 +53,6 @@ void printBoardToFile(FILE *outfile, char **board, int row, int col, int currGen
         fputc('\n', outfile);
     }
 }
-
 void checkNeighbors(char **board, int x, int y, int neigh, int maxRow, int maxCol)
 {
     //check top
@@ -107,14 +101,9 @@ void checkNeighbors(char **board, int x, int y, int neigh, int maxRow, int maxCo
 void evolve(char **board, int row, int col, int currGen, FILE *outfile)
 {
     printBoard(board, row, col, currGen);
-    //printBoardToFile(outfile, board, row, col, currGen); // not needed upon further analysis
-
     int i, j, neigh;
-
     char **nextGen = malloc(row * sizeof(char *));
     initBoard(nextGen, col);
-    //temp=>nextGen
-
     for (i = 0; i < row; i++)
     {
         for (j = 0; j < col; j++)
@@ -148,22 +137,15 @@ void evolve(char **board, int row, int col, int currGen, FILE *outfile)
     board = nextGen;
     free(board);
 }
-
+/* Load the game of life with the number of rows and columns
+ * then run game.
+ */
 void loadLife(FILE *fptr, int row, int col, int gen)
 {
-    /* Load the game of life with the number of rows and columns
-     * then run game.
-     */
-    //initialize the board
-    char **board = malloc(row * sizeof(char *));
+    char **board = malloc(row * sizeof(char *)); //initialize the board
     initBoard(board, col);
-    // prepare to read lines in to the maximum column
-    char line[col];
-    // initialize integer variables
-    int currRow = 0, i;
-    //FILE *outfile; // not needed upon further analysis
-    //outfile = fopen(OUT, "w"); // not needed upon further analysis
-
+    char line[col];     // prepare to read lines in to the maximum column
+    int currRow = 0, i; // initialize integer variables
     while (fgets(line, sizeof(line), fptr))
     { // read ptr is going to be where you finish the read
         //may have to dump characters..
@@ -196,15 +178,10 @@ void loadLife(FILE *fptr, int row, int col, int gen)
     {
         evolve(board, row, col, currGen, outfile);
     }
-    // printBoard(board, row, col, 0);
-    // close used files
-    fclose(fptr);
 
-    //fclose(outfile); // this is not needed upon further analysis -> stdout
-    //close board
-    free(board);
+    fclose(fptr); // close used files
+    free(board);  // free board space
 }
-
 /*
  * The checkFile function will take in a file descriptor
  * and a char pointer and check to see if that file exists.
@@ -231,8 +208,7 @@ void convSingleInt(char *arg, int *hold)
     int temp = atoi(num);
     *hold = temp;
 }
-
-/* decision fork function will assign correct values
+/* The decision fork function will assign correct values
  * and take the correct path to complete task
  */
 void decisionFork(int argc, char *argv[])
@@ -280,10 +256,10 @@ void decisionFork(int argc, char *argv[])
     }
 }
 /*
-     * Here we will split and determine what happens.
-     * rows, columns, filename, and generations will be defaulted
-     * to original values.
-     */
+ * Here we will split and determine what happens.
+ * rows, columns, filename, and generations will be defaulted
+ * to original values.
+ */
 int main(int argc, char *argv[])
 {
     decisionFork(argc, argv);
