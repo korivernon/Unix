@@ -60,7 +60,7 @@ void checkNeighbors(char **board, int x, int y, int neigh, int maxRow, int maxCo
         neigh++;
     }
     //check left
-    if (y > 0 && board[x][j - 1] == '*')
+    if (y > 0 && board[x][y - 1] == '*')
     {
         neigh++;
     }
@@ -94,10 +94,10 @@ void checkNeighbors(char **board, int x, int y, int neigh, int maxRow, int maxCo
     {
         neigh++;
     }
-    printf("neighbors in cycle: %d\n", neigh);
+    //printf("neighbors in cycle: %d\n", neigh);
 }
 
-void evolve(char **board, int row, int col, int currGen, FILE *outfile)
+void evolve(char **board, int row, int col, int currGen)
 {
     printBoard(board, row, col, currGen);
     int i, j, neigh;
@@ -175,7 +175,7 @@ void loadLife(FILE *fptr, int row, int col, int gen)
 
     for (int currGen = 0; currGen < gen; currGen++)
     {
-        evolve(board, row, col, currGen, outfile);
+        evolve(board, row, col, currGen);
     }
 
     fclose(fptr); // close used files
