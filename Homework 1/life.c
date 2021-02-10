@@ -136,7 +136,7 @@ void evolve(char **board, int row, int col, int currGen)
         }
     }
     board = nextGen;
-    free(board);
+    free(nextGen);
 }
 /* Load the game of life with the number of rows and columns
  * then run game.
