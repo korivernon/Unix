@@ -2,7 +2,7 @@
 ///   Class:          <UNIX SYSTEM PROGRAMMING>    ///
 ///   Description:    <Game of Life>               ///
 ///   Author:         <Kori Vernon>                ///
-///   Date: <02/09/21>                             ///
+///   Date:           <02/09/2021>                 ///
 ///------------------------------------------------///
 #include <stdio.h>
 #include <string.h>
@@ -27,7 +27,7 @@ void initBoard(char **board, int col)
 void printBoard(char **board, int row, int col, int currGen)
 {
     int i, j;
-    printf("Generation: %d\n", currGen);
+    printf("Generation %d:\n", currGen);
     for (i = 0; i < row; i++)
     {
         for (j = 0; j < col; j++)
@@ -36,6 +36,8 @@ void printBoard(char **board, int row, int col, int currGen)
         }
         printf("\n");
     }
+
+    printf("================================\n");
 }
 /* This function prints the board to the file, which upon further
  * analysis... doesn't actually need to be created
@@ -146,11 +148,10 @@ void loadLife(FILE *fptr, int row, int col, int gen)
     char line[col];     // prepare to read lines in to the maximum column
     int currRow = 0, i; // initialize integer variables
     while (fgets(line, sizeof(line), fptr))
-    { // read ptr is going to be where you finish the read
-        //may have to dump characters..
-        //getline??
+    { 
         for (i = 0; i < col; i++)
         {
+            if (line[i] > col){printf("(%d, %d): %c\n", currRow, i,line[i] );}
             if (line[i] == '*') //this may not exist
             {
                 board[currRow][i] = '*';
@@ -200,12 +201,8 @@ void checkFile(FILE *fptr)
  */
 void convSingleInt(char *arg, int *hold)
 {
-    // convert to strtol...
-    char c[512];
-    strcpy(c, arg);
-    char *num = c;
-    int temp = atoi(num);
-    *hold = temp;
+    long int tempLong = strtol(arg, NULL, 10);
+    *hold = tempLong;
 }
 /* The decision fork function will assign correct values
  * and take the correct path to complete task
