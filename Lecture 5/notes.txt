@@ -10,3 +10,13 @@ Signal Handler -> function which is called by the target environment when the co
 
 dev/null -> special file in unix operating system that discards all data written to it
 
+what is the point of seek? -> to modify where the next read or write takes place
+
+lseek-> number of bytes to shift from the beginning ???
+
+seek returns to you the offset of the file that you're into
+
+How are locations and disk blocks maintained in unix?
+They are maintained in trees.
+
+block -> operating system grouping
