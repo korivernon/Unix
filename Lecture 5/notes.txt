@@ -3,4 +3,10 @@
 Segmentation Fault -> This happens when the user tries to
 access memory that it does not own.
 
+Signals -> Smth that usually the kernel sends to the user process.
+
+Signal Handler -> function which is called by the target environment when the corresponding signal occurs
+
+
+dev/null -> special file in unix operating system that discards all data written to it
 
