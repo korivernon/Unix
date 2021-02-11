@@ -1,0 +1,6 @@
+2/11
+
+Segmentation Fault -> This happens when the user tries to
+access memory that it does not own.
+
+
