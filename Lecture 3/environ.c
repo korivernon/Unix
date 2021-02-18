@@ -14,13 +14,12 @@ extern char **environ;
 
 int main () {
     char * blah = "Blah";
-
-    free(environ);
-    for (int i = 0; environ[i] != NULL; ++i){
+    int i;
+    for (i = 0; environ[i] != NULL; ++i){
         puts(environ[i]);
-
     }
-    puts(blah);
+
+    clearenv();
     //argv arr has the array of chrptrs
  /*   for (char** p = environ; *p != NULL; ++p){
         puts(*p);

@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -6,8 +7,9 @@ char * TOGGLE = "-i";
 void findToggle(char * argv[], int argc, int * findI){
     int argvInd;
     for (argvInd = 0; argvInd < argc; argvInd++){
-        if (argv[argvInd] == TOGGLE){
+        if (argv[argvInd][0] == '-' && argv[argvInd][1] == 'i' && argv[argvInd][2] == '\0'){
             *findI = 1;
+
         }
     }
 }
@@ -38,6 +40,7 @@ int main(int argc, char * argv[]){
         if (findI == 1){
             // replace environment
             printContents(contents, argc-1);
+        //    clearenv(); /* Erase entire environment */
         } else {
             // don't replace environment
         }
