@@ -1,3 +1,9 @@
+///------------------------------------------------///
+///   Class:          <UNIX SYSTEM PROGRAMMING>    ///
+///   Description:    <ENV COMMAND>                ///
+///   Author:         <Kori Vernon>                ///
+///   Date:           <02/23/2021>                 ///
+///------------------------------------------------///
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,48 +12,15 @@
 extern char **environ;
 
 /*
- * This function will determine the length of the environment
- * to be used for environment allocation. 
- */
-int envLen()
-{
-    int i, sz = 0;
-    for (i = 0; environ[i] != NULL; i++)
-    {
-        sz++;
-    }
-    return sz;
-};
-
-/*
- * This function validifies arguments by counting the 
- * ENV_VAR=STATUS pairs passed into the command line
- * function call. 
- */
-int validArgs(char *argv[], int start)
-{
-    int i, validArg = 0;
-    for (i = start; argv[i] != NULL; i++)
-    {
-        if (strchr(argv[i], '=') != NULL)
-        {
-            validArg++;
-        }
-    }
-    return validArg;
-}
-
-/*
  * Checks to see if the input is inside of the environment array.
  * If the input does not exist, a -1 is returned, and if it does exist
  * then index is returned so that it can be modified in a parent function.
  */
 int checkEnv(char **envArr, char *line)
 {
-    int varLen, i;
+    int varLen = (strchr(line, '=') - line), i;
     for (i = 0; envArr[i] != NULL; i++)
     {
-        varLen = (strchr(line, '=') - line);
         if (strncmp(envArr[i], line, varLen) == 0)
         {
             return i;
@@ -74,10 +47,9 @@ void printEnv()
 char **envalloc(int numLines, int envLen)
 {
     int i;
-    char **newEnv = malloc((envLen + numLines + 1) * sizeof(char *));
+    char **newEnv = malloc((envLen + numLines + 1) * sizeof(char *)); //allocate needed lines
     for (i = 0; i < envLen; i++)
     {
-        newEnv[i] = malloc((strlen(environ[i]) + 1) * sizeof(char));
         newEnv[i] = environ[i];
     }
     return newEnv;
@@ -85,24 +57,15 @@ char **envalloc(int numLines, int envLen)
 /*
  * Put the line in the env array.
  */
-void envPutLine(char *argv[], char *line, char **newEnv, int *i, int *key, int *store)
+void envPutLine(char *argv[], char *line, char **newEnv, int i)
 {
-    *key = checkEnv(newEnv, line);
-    if (*key != -1)
+    int existLoc = checkEnv(newEnv, line), store = -1; // check the key value pair to see if it exists
+    if (existLoc != -1) //if input exists inside of env array
     {
-        *store = *i;
-        *i = *key;
+        store = i; //set storage == i
+        i = existLoc; //assign i to match existing location
     }
-    newEnv[*i] = malloc((strlen(line) + 1) * sizeof(char));
-    newEnv[*i] = line;
-    if (*key != -1)
-    {
-        if (*store == -1)
-        {
-            exit(1);
-        }
-        *i = *store - 1;
-    }
+    newEnv[i] = line; //place the line inside of new environment
 }
 /*
  * This function creates the environment and places the Key Value Pairs
@@ -110,7 +73,7 @@ void envPutLine(char *argv[], char *line, char **newEnv, int *i, int *key, int *
  */
 char **makeEnv(char *argv[], int flag, int numLines, int envLen)
 {
-    int arg_i = 1 - flag, key, store = -1;
+    int arg_i = 1 - flag;
     char **newEnv = NULL, *line = NULL;
     if (flag == 0)
     {
@@ -118,18 +81,19 @@ char **makeEnv(char *argv[], int flag, int numLines, int envLen)
     }
     else
     {
-        newEnv = malloc((numLines + 1) * sizeof(char *));
+        newEnv = malloc((numLines + 1) * sizeof(char *)); //allocate only enough 
         envLen = 0;
     }
     for (int i = envLen; i < envLen + numLines; i++)
     {
-        line = (char *)argv[arg_i];
+        line = argv[arg_i];
         if (line == NULL)
         {
             return newEnv;
         }
         //put a line in into env
-        envPutLine(argv, line, newEnv, &i, &key, &store);
+        envPutLine(argv, line, newEnv, i);
+        
         arg_i++;
     }
     return newEnv;
@@ -141,12 +105,14 @@ char **makeEnv(char *argv[], int flag, int numLines, int envLen)
  */
 int findToggle(char *argv[], int argc)
 {
-    int flag = 0;
-    for (int i = 1; i < argc; i++)
+    int flag = 0, i, notSeen = 0;
+    for (i = 1; i < argc; i++)
     {
-        if ((strncmp(argv[i], "-i", 2) == 0))
+        if ((strcmp(argv[i], "-i") == 0) && notSeen == 0)
         {
             flag--;
+        } else {
+            break; // to account for improper behavior; ./env -i -i hi=no -i
         }
     }
     return flag;
@@ -157,9 +123,10 @@ int findToggle(char *argv[], int argc)
  */
 void callCommand(char *argv[], int argc, int start, int numLines)
 {
-    if ((start + numLines) < argc)
+    int count = start + numLines;
+    if (count < argc)
     {
-        if (execvp(argv[start + numLines], (argv + start + numLines)) == -1)
+        if (execvp(argv[count], (argv + count)) == -1) // call the execvp with passed in arguments if it exists
         {
             exit(1);
         }
@@ -168,18 +135,30 @@ void callCommand(char *argv[], int argc, int start, int numLines)
 
 int main(int argc, char *argv[])
 {
-    int flag, start, numLines;
+    int flag, start, numLines =  0, i, sz = 0;
+    ;
     if (argc == 1)
     {
         printEnv();
         return 0;
     }
-    flag = findToggle(argv, argc);
+    flag = findToggle(argv, argc); //find last LEGAL occurence
     start = 1 - flag;
-    numLines = validArgs(argv, start);
-    if (numLines)
+    for (i = start; argv[i] != NULL; i++) // counts the additional number of lines that need to be parsed
     {
-        environ = makeEnv(argv, flag, numLines, envLen());
+        if (strchr(argv[i], '=') != NULL)
+        {
+            numLines++;
+        }
+    }
+    if (numLines) // find the size of environ
+    {
+        for (i = 0; environ[i] != NULL; i++)
+        {
+            sz++;
+        }
+        //free(environ); ??? is this not allowed before reassignment ?
+        environ = makeEnv(argv, flag, numLines, sz); //create the new environment
     }
     callCommand(argv, argc, numLines, start);
     printEnv();
