@@ -1,169 +1,187 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 extern char **environ;
-char *TOGGLE = "-i";
 
-void replaceEnv(char *contents[], int contentsSz)
-{
-
-    char **newEnviron = malloc(contentsSz * sizeof(char *));
-    int i;
-    printf("%d size\n", contentsSz);
-    for (i = 0; i < contentsSz; i++)
-    {
-        printf("LOADING IN: %s\n", contents[i]);
-        newEnviron[i] = contents[i];
-    }
-    newEnviron[i + 1] = NULL;
-    environ = newEnviron;
-}
 /*
- * The checker function returns 1 if the strings
- * are the same up to the '=' sign and 0 if
- * the strings are not the same up to that point.
+ * This function will determine the length of the environment
+ * to be used for environment allocation. 
  */
-int checker(char input[], char check[])
+int envLen()
 {
-    int i, res = 1;
-
-    for (i = 0; input[i] != '=' || check[i] != '='; i++)
+    int i, sz = 0;
+    for (i = 0; environ[i] != NULL; i++)
     {
-        if (input[i] != check[i])
-        {
-            res = 0;
-            break;
-        }
+        sz++;
     }
-    return res;
-}
+    return sz;
+};
+
 /*
- * Resize function to resize our dynamic array when needed
+ * This function validifies arguments by counting the 
+ * ENV_VAR=STATUS pairs passed into the command line
+ * function call. 
  */
-void resize(char **currArr, int *size)
+int validArgs(char *argv[], int start)
 {
-    int newSz = (*size) * 2;
-    char **tempArr = malloc((newSz) * sizeof(char *));
-
-    for (int i = 0; i < *size; i++)
+    int i, validArg = 0;
+    for (i = start; argv[i] != NULL; i++)
     {
-        tempArr[i] = currArr[i];
-    }
-    free(currArr);
-    *size = newSz;
-    currArr = tempArr;
-}
-void modifyEnv(char *contents[], int contentsSz)
-{
-    int i, j, replaceBool, maxSz = 512;
-    char **newEnviron = malloc(512 * sizeof(char *));
-
-    for (i = 0; i < contentsSz; i++)
-    {
-
-        for (j = 0; environ[j] != NULL; j++)
+        if (strchr(argv[i], '=') != NULL)
         {
-            replaceBool = 1;
-            replaceBool = checker(environ[j], contents[i]); //check to replace env variable
-            if (j + 2 > maxSz)
-            {
-                resize(newEnviron, &maxSz); //resize when needed
-            }
-
-            if (replaceBool == 0)
-            {
-                newEnviron[j] = environ[j];
-            }
-            else
-            {
-                newEnviron[j] = contents[i];
-            }
-        }
-        if (replaceBool == 0)
-        {
-            newEnviron[j + 1] = contents[i]; //add to the end
-            printf("adding to the end\n");
-        }
-        newEnviron[j + 2] = NULL;
-        environ = newEnviron;
-    }
-}
-
-void findToggle(char *argv[], int argc, int *findI)
-{
-    int argvInd;
-    for (argvInd = 0; argvInd < argc; argvInd++)
-    {
-        if (argv[argvInd][0] == '-' && argv[argvInd][1] == 'i' && argv[argvInd][2] == '\0')
-        {
-            *findI = argvInd; //location of last toggle found
+            validArg++;
         }
     }
+    return validArg;
 }
 
-void grabContents(char *argv[], int startIndex, int size, char *contents[])
-{
-    int i;
-    for (i = startIndex + 1; i < size; i++)
-    {
-        //    valid = checkValidity(argv[i+1]);
-        contents[i] = argv[i];
-    }
-}
-
-void printvec(char *charVec[], int size)
-{
-    for (int i = 0; i < size; i++)
-    {
-        printf("index[%d] : %s\n", i, charVec[i]);
-    }
-}
-/* This function is responsible for printing the environment
+/*
+ * Checks to see if the input is inside of the environment array.
+ * If the input does not exist, a -1 is returned, and if it does exist
+ * then index is returned so that it can be modified in a parent function.
  */
-void printEnviron()
+int checkEnv(char **envArr, char *line)
 {
-    for (int i = 0; environ[i] != NULL; i++)
+    int varLen, i;
+    for (i = 0; envArr[i] != NULL; i++)
+    {
+        varLen = (strchr(line, '=') - line);
+        if (strncmp(envArr[i], line, varLen) == 0)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+/*
+ * Ouputs the contents of the environ variable.
+ */
+void printEnv()
+{
+    for (int i = 0; (environ[i] != NULL); i++)
     {
         puts(environ[i]);
     }
 }
 
-int main(int argc, char *argv[])
+/*
+ * This function allocates the enviornment array on the heap
+ * to be used in outside functions. 
+ */
+char **envalloc(int numLines, int envLen)
 {
-    int findI = 0;
-    if (argc == 1)
+    int i;
+    char **newEnv = malloc((envLen + numLines + 1) * sizeof(char *));
+    for (i = 0; i < envLen; i++)
     {
-        // display environment
-        for (int i = 0; environ[i] != NULL; i++)
+        newEnv[i] = malloc((strlen(environ[i]) + 1) * sizeof(char));
+        newEnv[i] = environ[i];
+    }
+    return newEnv;
+}
+/*
+ * Put the line in the env array.
+ */
+void envPutLine(char *argv[], char *line, char **newEnv, int *i, int *key, int *store)
+{
+    *key = checkEnv(newEnv, line);
+    if (*key != -1)
+    {
+        *store = *i;
+        *i = *key;
+    }
+    newEnv[*i] = malloc((strlen(line) + 1) * sizeof(char));
+    newEnv[*i] = line;
+    if (*key != -1)
+    {
+        if (*store == -1)
         {
-
-            puts(environ[i]);
+            exit(1);
         }
+        *i = *store - 1;
+    }
+}
+/*
+ * This function creates the environment and places the Key Value Pairs
+ * where they belong.
+ */
+char **makeEnv(char *argv[], int flag, int numLines, int envLen)
+{
+    int arg_i = 1 - flag, key, store = -1;
+    char **newEnv = NULL, *line = NULL;
+    if (flag == 0)
+    {
+        newEnv = envalloc(numLines, envLen);
     }
     else
     {
-
-        findToggle(argv, argc, &findI);  // find last occurrance of -i
-        int contentsSz = argc - (findI); // size of the remaining space
-
-        char *contents[contentsSz];
-        grabContents(argv, findI, contentsSz, contents);
-        printvec(contents, contentsSz);
-
-        if (findI == 1)
+        newEnv = malloc((numLines + 1) * sizeof(char *));
+        envLen = 0;
+    }
+    for (int i = envLen; i < envLen + numLines; i++)
+    {
+        line = (char *)argv[arg_i];
+        if (line == NULL)
         {
-            // replace environment
-            replaceEnv(contents, contentsSz);
-            printEnviron();
-            free(environ);
+            return newEnv;
         }
-        else
+        //put a line in into env
+        envPutLine(argv, line, newEnv, &i, &key, &store);
+        arg_i++;
+    }
+    return newEnv;
+}
+/*
+ * This function will find the index of the toggle if it exists. 
+ * If the toggle doesn't exist, the answer will be -1. Otherwise, 
+ * it will be the index + 1 of the last "-i".
+ */
+int findToggle(char *argv[], int argc)
+{
+    int flag = 0;
+    for (int i = 1; i < argc; i++)
+    {
+        if ((strncmp(argv[i], "-i", 2) == 0))
         {
-            // don't replace environment
-            modifyEnv(contents, contentsSz);
-            printEnviron();
+            flag--;
         }
     }
+    return flag;
+}
+/*
+ * Call the command if it exists using execvp. If it does not exist
+ * then exit the process. 
+ */
+void callCommand(char *argv[], int argc, int start, int numLines)
+{
+    if ((start + numLines) < argc)
+    {
+        if (execvp(argv[start + numLines], (argv + start + numLines)) == -1)
+        {
+            exit(1);
+        }
+    }
+}
+
+int main(int argc, char *argv[])
+{
+    int flag, start, numLines;
+    if (argc == 1)
+    {
+        printEnv();
+        return 0;
+    }
+    flag = findToggle(argv, argc);
+    start = 1 - flag;
+    numLines = validArgs(argv, start);
+    if (numLines)
+    {
+        environ = makeEnv(argv, flag, numLines, envLen());
+    }
+    callCommand(argv, argc, numLines, start);
+    printEnv();
     return 0;
 }
