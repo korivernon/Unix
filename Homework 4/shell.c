@@ -31,11 +31,21 @@ void runShell(void){
         print(command);
         int pid = fork();
         int len = strlen(command);
+
+        char *p = strtok(command, " ");
+        char *array[80];
+        int i = 0;
+        while (p != NULL){
+            array[i++] = p;
+            p = strtok(NULL, " ");
+        }
+        array[i++] = NULL;
+        int argc = i;
         if (command[len-1] == '\n'){
             command[len-1] = '\0';
         }
         if (pid == 0){ // child  process
-            execlp(command, command, NULL);
+            execvp(array[0], array);
             fprintf(stderr, "execlp err: child process could not execlp\n\n");
             break;
         }
