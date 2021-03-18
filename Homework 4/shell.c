@@ -10,10 +10,6 @@
 #define EXITCOND 0
 #define EX exit\n
 
-void print(char * command){
-    int len = strlen(command);
-    printf("%s\n" , command);
-}
 void runShell(void){
     while(TRUE){
         printf("trapshell\n$ ");
@@ -26,9 +22,7 @@ void runShell(void){
             break;
         } // if the line is exit\n then exit
         // split command and return into argv
-        print(command);
         int pid = fork();
-        int len = strlen(command);
         char *p = strtok(command, " ");
         char *array[80];
         int i = 0;
