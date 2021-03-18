@@ -18,11 +18,9 @@ void runShell(void){
     while(TRUE){
         printf("trapshell\n$ ");
         char command[BUF_LEN]; // buffer line
-        
         if (!fgets(command, BUF_LEN, stdin)) {
             break;
         }
-        int bcond = 0;
         
         if (strcmp(command, "exit\n") == EXITCOND || strcmp(command, "exit\0") == EXITCOND){
             break;
@@ -31,7 +29,6 @@ void runShell(void){
         print(command);
         int pid = fork();
         int len = strlen(command);
-
         char *p = strtok(command, " ");
         char *array[80];
         int i = 0;
@@ -40,10 +37,6 @@ void runShell(void){
             p = strtok(NULL, " ");
         }
         array[i++] = NULL;
-        int argc = i;
-        if (command[len-1] == '\n'){
-            command[len-1] = '\0';
-        }
         if (pid == 0){ // child  process
             execvp(array[0], array);
             fprintf(stderr, "execlp err: child process could not execlp\n\n");
