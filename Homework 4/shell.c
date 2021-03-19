@@ -1,3 +1,9 @@
+///------------------------------------------------///
+///   Class:          <UNIX SYSTEM PROGRAMMING>    ///
+///   Description:    <SHELL IMPLEMENTATION>       ///
+///   Author:         <Kori Vernon>                ///
+///   Date:           <03/21/2021>                 ///
+///------------------------------------------------///
 #include <stdio.h> 
 #include <stdlib.h>
 #include <string.h>
@@ -29,8 +35,19 @@ void runShell(void);
  * This function runs is the pilot function that
  * runs the shell.
  */
+int parseDecisions(char **argv);
+/*
+ * This function parses the array for particular inputs
+ */
+char **tokenize(char *command);
+/*
+ * Function to tokenize and dynamically reallocate
+ * memory, however, the function is not working with
+ * code (done after the fact), so I am omitting
+ */
 
-int changeDirectory(char * destination){
+int changeDirectory(char *destination)
+{
     char buf[BUF_LEN];
     char *getDir = getcwd(buf, sizeof(buf));
     char *dir = strcat(getDir, "/");
@@ -46,11 +63,6 @@ void welcome(void){
     printf("$ "); 
 }
 
-/*
- * Function to tokenize and dynamically reallocate
- * memory, however, the function is not working with
- * code (done after the fact), so I am omitting
- */
 char ** tokenize(char * command){
     const char * sep = " ";
     char **argv = malloc(sizeof(char *));
@@ -73,13 +85,34 @@ char ** tokenize(char * command){
     }
     return argv;
 }
+
+int parseDecisions(char ** array){
+    if (strcmp("exit", array[0]) == 0)
+        return -1;
+    else if (strcmp("cd", array[0]) == 0)
+    { // in the event we have to change dir
+        int success = changeDirectory(array[1]);
+        if (success == -1)
+        {
+            printf("cd: error in changing directory\n");
+        }
+        else
+            return 1;
+    }
+    else if (strcmp("l", array[0]) == 0)
+    { // in the event we have "l"
+        array[0] = "ls";
+        array[1] = "-l", array[2] = NULL;
+    }
+    return 0;
+}
 void runShell(void){
     while(TRUE){
         welcome(); //print the welcome statement
         char command[BUF_LEN]; // buffer line
         if (!fgets(command, BUF_LEN, stdin)) break;
         // split command and return into argv
-        int len = strlen(command), i = 0;
+        int len = strlen(command), i = 0, success = 0;
         char *p = strtok(command, " "), *array[BUF_LEN];
         while (p != NULL){
             array[i++] = p;
@@ -87,17 +120,9 @@ void runShell(void){
         }
         array[i++] = NULL; //set the last element to null for execing
         if (command[len-1] == '\n') command[len-1] = '\0';
-        if (strcmp("exit", array[0]) == 0) break;
-        else if (strcmp("cd", array[0]) == 0){ // in the event we have to change dir
-            int success = changeDirectory(array[1]);
-            if (success == -1) {
-                printf("cd: error in changing directory\n");
-            }
-            else continue;
-        }
-        else if (strcmp("l", array[0]) == 0){ // in the event we have "l"
-            array[0] = "ls"; array[1] = "-l", array[2] = NULL;
-        }
+        success = parseDecisions(array);
+        if (success == -1) break;
+        else if (success == 1) continue;
         int pid = fork();
         //check fork process to see if it failed 
         if (pid == 0){ // child  process
