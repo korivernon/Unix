@@ -15,6 +15,20 @@
 #define ANSI_B "\x1b[34m"
 #define RESET "\x1b[0m"
 
+int changeDirectory(char * destination);
+/*
+ * This function presents a welcome message to the user
+ */
+void welcome(void);
+/*
+ * This function changes the current working directory
+ * particularly for the cd command
+ */
+void runShell(void);
+/*
+ * This function runs is the pilot function that
+ * runs the shell.
+ */
 
 int changeDirectory(char * destination){
     char buf[BUF_LEN];
@@ -30,6 +44,34 @@ void welcome(void){
     printf(ANSI_R "trapshell" RESET);
     printf(ANSI_B "~%s\n" RESET, getDir );
     printf("$ "); 
+}
+
+/*
+ * Function to tokenize and dynamically reallocate
+ * memory, however, the function is not working with
+ * code (done after the fact), so I am omitting
+ */
+char ** tokenize(char * command){
+    const char * sep = " ";
+    char **argv = malloc(sizeof(char *));
+    if (argv){
+        int i = 0;
+        char *tok = strtok(command, sep);
+        while (tok){
+            char ** tempargv = realloc(argv, (i+1) * sizeof(char *)); //declare larger temp argv
+            if (tempargv == NULL) break;
+            argv = tempargv;
+            i++;
+            argv[i-2] = malloc(strlen(tok) + 1); //allocate specific amount of space
+            if (argv[i-2] != NULL){
+                // if this is an available space then copy 
+                strcpy(argv[i-2], tok);
+                tok = strtok(NULL, sep);
+            }
+        }
+        argv[i-1] = NULL;
+    }
+    return argv;
 }
 void runShell(void){
     while(TRUE){
