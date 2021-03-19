@@ -1,43 +1,76 @@
 #include <stdio.h> 
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdbool.h> 
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <dirent.h>
+#include <unistd.h>
 
-#define BUF_LEN 80
+#define BUF_LEN 1024
 #define TRUE 1
 #define EXITCOND 0
-#define EX exit\n
+#define ANSI_R "\x1b[31m"
+#define ANSI_B "\x1b[34m"
+#define RESET "\x1b[0m"
 
+
+int changeDirectory(char * destination){
+    char buf[BUF_LEN];
+    char *getDir = getcwd(buf, sizeof(buf));
+    char *dir = strcat(getDir, "/");
+    char *dest = strcat(dir, destination); //the destination is in argv
+    return chdir(dest);
+}
+
+void welcome(void){
+    char buf[BUF_LEN];
+    char *getDir = getcwd(buf, BUF_LEN);
+    printf(ANSI_R "trapshell" RESET);
+    printf(ANSI_B "~%s\n" RESET, getDir );
+    printf("$ "); 
+}
 void runShell(void){
     while(TRUE){
-        printf("trapshell\n$ ");
+        welcome(); //print the welcome statement
         char command[BUF_LEN]; // buffer line
-        if (!fgets(command, BUF_LEN, stdin)) {
-            break;
-        }
-        
-        if (strcmp(command, "exit\n") == EXITCOND || strcmp(command, "exit\0") == EXITCOND){
-            break;
-        } // if the line is exit\n then exit
+        if (!fgets(command, BUF_LEN, stdin)) break;
         // split command and return into argv
-        int pid = fork();
-        char *p = strtok(command, " ");
-        char *array[80];
-        int i = 0;
+        int len = strlen(command), i = 0;
+        char *p = strtok(command, " "), *array[BUF_LEN];
         while (p != NULL){
             array[i++] = p;
             p = strtok(NULL, " ");
         }
-        array[i++] = NULL;
-        if (pid == 0){ // child  process
-            execvp(array[0], array);
-            fprintf(stderr, "execlp err: child process could not execlp\n\n");
-            break;
+        array[i++] = NULL; //set the last element to null for execing
+        if (command[len-1] == '\n') command[len-1] = '\0';
+        if (strcmp("exit", array[0]) == 0) break;
+        else if (strcmp("cd", array[0]) == 0){ // in the event we have to change dir
+            int success = changeDirectory(array[1]);
+            if (success == -1) {
+                printf("cd: error in changing directory\n");
+            }
+            else continue;
         }
-        else{
+        else if (strcmp("l", array[0]) == 0){ // in the event we have "l"
+            array[0] = "ls"; array[1] = "-l", array[2] = NULL;
+        }
+        int pid = fork();
+        //check fork process to see if it failed 
+        if (pid == 0){ // child  process
+            if (execvp(array[0], array)){
+                fprintf(stderr, "execvp: error, child process could not execvp :(\n");
+                break;
+            }
+        }
+        else if (pid == -1){
+            printf("fork(): can't fork process\n");
+            exit(1);
+        }
+        else {
             wait(0); // parent process
+            printf("\n"); //print another line for separation
         }
     }
 }
